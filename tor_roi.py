@@ -17,6 +17,9 @@ def save_data(df):
 
 if 'sessions' not in st.session_state:
     st.session_state.sessions = load_data()
+    # データを日付の降順（新しいものが上）にソートして保存
+    if not st.session_state.sessions.empty:
+        st.session_state.sessions = st.session_state.sessions.sort_values(by='日付', ascending=False, ignore_index=True)
 
 # --- アプリケーションのUI ---
 st.title('ポーカーROIトラッカー')
@@ -44,17 +47,14 @@ with st.form("session_form"):
                 '純利益': net_profit,
                 'ROI': roi
             }])
-            # 新しいセッションデータを追加
+            # 新しいセッションデータを追加し、日付でソート
             st.session_state.sessions = pd.concat([st.session_state.sessions, new_session], ignore_index=True)
+            st.session_state.sessions = st.session_state.sessions.sort_values(by='日付', ascending=False, ignore_index=True)
             # データをCSVに保存
             save_data(st.session_state.sessions)
 
-# --- データの表示 ---
+# --- 計算結果の表示 ---
 if not st.session_state.sessions.empty:
-    st.subheader("セッション履歴")
-    st.dataframe(st.session_state.sessions)
-
-    # 合計の表示
     st.subheader("全体の結果")
     total_buy_in = st.session_state.sessions['バイイン'].sum()
     total_payout = st.session_state.sessions['賞金'].sum()
@@ -70,9 +70,24 @@ if not st.session_state.sessions.empty:
     col3.metric("総純利益", f"{total_net_profit:,.0f}円")
     col4.metric("全体ROI", f"{overall_roi:.2f}%")
 
-    # グラフの表示
+    # --- グラフの表示 ---
     st.subheader("ROIの推移")
     st.line_chart(st.session_state.sessions['ROI'])
     
+    # --- 履歴の表示と削除機能 ---
+    st.subheader("セッション履歴（削除可能）")
+    st.write("削除したい行の左側にあるチェックボックスにチェックを入れ、[Delete]ボタンを押してください。")
+    
+    edited_df = st.data_editor(
+        st.session_state.sessions, 
+        num_rows="dynamic",
+        use_container_width=True
+    )
+    
+    if st.button("削除を確定"):
+        st.session_state.sessions = edited_df
+        save_data(st.session_state.sessions)
+        st.success("履歴が更新されました。")
+
 else:
     st.info("まだセッションがありません。上のフォームから最初のセッションを追加してください。")
