@@ -4,7 +4,10 @@ import math
 import time
 import random
 from collections import Counter
-
+st.set_page_config(
+    page_title="GAME",
+    page_icon=":wrench:" # ここでアイコンを指定
+)
 # --- ゲームルール辞書 ---
 game_rules = {
     'Holdem - Normal': """

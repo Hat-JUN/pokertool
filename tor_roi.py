@@ -5,7 +5,10 @@ import datetime
 
 # CSVファイルのパスを定義
 DATA_FILE = 'poker_sessions.csv'
-
+st.set_page_config(
+    page_title="ROItool",
+    page_icon=":1234:" # ここでアイコンを指定
+)
 # --- データの読み込みと初期化 ---
 def load_data():
     if os.path.exists(DATA_FILE):
